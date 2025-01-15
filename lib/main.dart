@@ -46,8 +46,10 @@ class _WebViewScreenState extends State<WebViewScreen> {
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..enableZoom(true)
+      ..setUserAgent('Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36')
+      ..setBackgroundColor(const Color(0x00000000))
       ..addJavaScriptChannel(
-        'Flutter',
+        'NativeApp',
         onMessageReceived: (JavaScriptMessage message) {
           if (message.message.startsWith('OPEN_URL:')) {
             final String url = message.message.substring(9);
@@ -62,6 +64,14 @@ class _WebViewScreenState extends State<WebViewScreen> {
         NavigationDelegate(
           onNavigationRequest: (NavigationRequest request) {
             return NavigationDecision.navigate;
+          },
+          onPageStarted: (String url) {
+            _controller?.runJavaScript('''
+              var viewport = document.querySelector('meta[name="viewport"]');
+              if (viewport) {
+                viewport.content = 'width=device-width, initial-scale=0.4, maximum-scale=2.0, user-scalable=yes';
+              }
+            ''');
           },
           onPageFinished: (String url) {
             _injectCustomJS();
@@ -90,32 +100,41 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
   void _injectCustomJS() {
     _controller?.runJavaScript('''
+      // Set viewport
+      var viewport = document.querySelector('meta[name="viewport"]');
+      if (viewport) {
+        viewport.content = 'width=device-width, initial-scale=0.4, maximum-scale=2.0, user-scalable=yes';
+      } else {
+        viewport = document.createElement('meta');
+        viewport.name = 'viewport';
+        viewport.content = 'width=device-width, initial-scale=0.4, maximum-scale=2.0, user-scalable=yes';
+        document.head.appendChild(viewport);
+      }
+
+      // Force desktop mode
+      document.body.style.minWidth = 'auto';
+      document.documentElement.style.minWidth = 'auto';
+
       document.addEventListener('click', function(e) {
         var target = e.target;
-        var container = target.closest('[data-testid="table-scroll-container"]');
-        if (container) {
+        var link = target.closest('a');
+        if (link && link.href && link.href.match(/github\\.com\\/[^\\/]+\\/[^\\/]+\\/issues\\/\\d+/)) {
           e.preventDefault();
           e.stopPropagation();
-          var link = target.closest('a');
-          if (link) {
-            Flutter.postMessage('OPEN_URL:' + link.href);
-          }
+          NativeApp.postMessage('OPEN_URL:' + link.href);
         }
       }, true);
 
       window.openAllLinks = function() {
-        var container = document.querySelector('[data-testid="table-scroll-container"]');
-        if (container) {
-          var links = container.querySelectorAll('a');
-          var uniqueUrls = new Set();
-          links.forEach(function(link) {
-            if (link.href) {
-              uniqueUrls.add(link.href);
-            }
-          });
-          var urlsArray = Array.from(uniqueUrls);
-          Flutter.postMessage('OPEN_ALL_URLS:' + JSON.stringify(urlsArray));
-        }
+        var links = document.getElementsByTagName('a');
+        var uniqueUrls = new Set();
+        Array.from(links).forEach(function(link) {
+          if (link.href && link.href.match(/github\\.com\\/[^\\/]+\\/[^\\/]+\\/issues\\/\\d+/)) {
+            uniqueUrls.add(link.href);
+          }
+        });
+        var urlsArray = Array.from(uniqueUrls);
+        NativeApp.postMessage('OPEN_ALL_URLS:' + JSON.stringify(urlsArray));
       };
 
       document.body.style.fontSize = '80%';
