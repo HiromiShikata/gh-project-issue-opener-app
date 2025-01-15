@@ -15,11 +15,18 @@ jobs:
           flutter-version: '3.16.0'
           channel: 'stable'
           cache: true
+      - uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: 7.5
+      - name: Install Android SDK Platform 34
+        run: |
+          echo y | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platforms;android-34"
       - run: |
           echo "flutter.compileSdkVersion=34" > android/local.properties
           echo "flutter.targetSdkVersion=34" >> android/local.properties
+          echo "flutter.minSdkVersion=21" >> android/local.properties
       - run: flutter pub get
-      - run: flutter build apk --release
+      - run: flutter build apk
       - uses: actions/upload-artifact@v3
         with:
           name: release-apk
