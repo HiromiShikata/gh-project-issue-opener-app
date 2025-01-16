@@ -118,7 +118,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
       document.addEventListener('click', function(e) {
         var target = e.target;
         var link = target.closest('a');
-        if (link && link.href && link.href.match(/github\\.com\\/[^\\/]+\\/[^\\/]+\\/issues\\/\\d+/)) {
+        if (link && link.href && link.href.match(/github\\.com\\/[^\\/]+\\/[^\\/]+\\/(issues|pull)\\/\\d+/)) {
           e.preventDefault();
           e.stopPropagation();
           NativeApp.postMessage('OPEN_URL:' + link.href);
@@ -129,7 +129,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
         var links = document.getElementsByTagName('a');
         var uniqueUrls = new Set();
         Array.from(links).forEach(function(link) {
-          if (link.href && link.href.match(/github\\.com\\/[^\\/]+\\/[^\\/]+\\/issues\\/\\d+/)) {
+          if (link.href && link.href.match(/github\\.com\\/[^\\/]+\\/[^\\/]+\\/(issues|pull)\\/\\d+/)) {
             uniqueUrls.add(link.href);
           }
         });
