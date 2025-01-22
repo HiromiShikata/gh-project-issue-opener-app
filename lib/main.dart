@@ -137,7 +137,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
         NativeApp.postMessage('OPEN_ALL_URLS:' + JSON.stringify(urlsArray));
       };
 
-      document.body.style.fontSize = '80%';
+      document.body.style.fontSize = '100%';
       var styleElement = document.createElement('style');
       styleElement.textContent = `
         body, table, .markdown-body { font-size: 12px !important; }
