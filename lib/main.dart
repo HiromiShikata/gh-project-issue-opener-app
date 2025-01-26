@@ -50,10 +50,11 @@ class _WebViewScreenState extends State<WebViewScreen> {
       ..setBackgroundColor(const Color(0x00000000))
       ..addJavaScriptChannel(
         'NativeApp',
-        onMessageReceived: (JavaScriptMessage message) {
+        onMessageReceived: (JavaScriptMessage message) async {
           if (message.message.startsWith('OPEN_URL:')) {
             final String url = message.message.substring(9);
-            _launchURL(url);
+            await _launchURL(url);
+            await Future.delayed(const Duration(milliseconds: 500));
           } else if (message.message.startsWith('OPEN_ALL_URLS:')) {
             final String urlsJson = message.message.substring(14);
             _handleOpenAllUrls(urlsJson);
@@ -148,11 +149,12 @@ class _WebViewScreenState extends State<WebViewScreen> {
     ''');
   }
 
-  void _handleOpenAllUrls(String urlsJson) {
+  Future<void> _handleOpenAllUrls(String urlsJson) async {
     try {
       final List<dynamic> urls = json.decode(urlsJson);
       for (final String url in urls) {
-        _launchURL(url);
+        await _launchURL(url);
+        await Future.delayed(const Duration(milliseconds: 500));
       }
     } catch (e) {
       print('Error handling open all URLs: $e');
