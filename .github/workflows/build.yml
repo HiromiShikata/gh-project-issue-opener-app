@@ -14,7 +14,7 @@ jobs:
           flutter-version: '3.16.0'
           channel: 'stable'
           cache: true
-      - uses: gradle/gradle-build-action@v2
+      - uses: gradle/gradle-build-action@v3
         with:
           gradle-version: 7.5
       - name: Install Android SDK Platform 34
