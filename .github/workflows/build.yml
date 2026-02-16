@@ -11,12 +11,10 @@ jobs:
           java-version: '17'
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.16.0'
+          flutter-version: '3.41.0'
           channel: 'stable'
           cache: true
-      - uses: gradle/gradle-build-action@v3
-        with:
-          gradle-version: 7.5
+      - uses: gradle/actions/setup-gradle@v4
       - name: Install Android SDK Platform 34
         run: |
           echo y | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platforms;android-34"
