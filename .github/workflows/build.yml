@@ -15,12 +15,12 @@ jobs:
           channel: 'stable'
           cache: true
       - uses: gradle/actions/setup-gradle@v6
-      - name: Install Android SDK Platform 34
+      - name: Install Android SDK Platform 36
         run: |
-          echo y | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platforms;android-34"
+          echo y | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platforms;android-36"
       - run: |
-          echo "flutter.compileSdkVersion=34" > android/local.properties
-          echo "flutter.targetSdkVersion=34" >> android/local.properties
+          echo "flutter.compileSdkVersion=36" > android/local.properties
+          echo "flutter.targetSdkVersion=36" >> android/local.properties
           echo "flutter.minSdkVersion=21" >> android/local.properties
       - run: flutter pub get
       - run: flutter build apk
