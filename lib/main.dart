@@ -134,7 +134,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
             uniqueUrls.add(link.href);
           }
         });
-        var urlsArray = Array.from(uniqueUrls);
+        var urlsArray = Array.from(uniqueUrls).reverse();
         NativeApp.postMessage('OPEN_ALL_URLS:' + JSON.stringify(urlsArray));
       };
 
