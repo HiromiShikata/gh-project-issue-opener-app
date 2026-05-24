@@ -46,8 +46,8 @@ android {
     }
 
     signingConfigs {
-        if (keyPropertiesFile.exists()) {
-            ciRelease {
+        ciRelease {
+            if (keyPropertiesFile.exists()) {
                 keyAlias = keyProperties["keyAlias"]
                 keyPassword = keyProperties["keyPassword"]
                 storeFile = file(keyProperties["storeFile"])
