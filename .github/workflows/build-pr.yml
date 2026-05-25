@@ -63,7 +63,7 @@ jobs:
       actions: read
     steps:
       - name: Post APK download link to PR description
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const { data: { artifacts } } = await github.rest.actions.listWorkflowRunArtifacts({
