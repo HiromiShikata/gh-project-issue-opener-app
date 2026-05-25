@@ -21,6 +21,14 @@ if (flutterVersionName == null) {
     flutterVersionName = "1.0"
 }
 
+def keyProperties = new Properties()
+def keyPropertiesFile = rootProject.file("key.properties")
+if (keyPropertiesFile.exists()) {
+    keyPropertiesFile.withReader("UTF-8") { reader ->
+        keyProperties.load(reader)
+    }
+}
+
 android {
     namespace = "com.example.github_webview_app"
     compileSdk = 36
@@ -37,6 +45,17 @@ android {
         }
     }
 
+    signingConfigs {
+        ciRelease {
+            if (keyPropertiesFile.exists()) {
+                keyAlias = keyProperties["keyAlias"]
+                keyPassword = keyProperties["keyPassword"]
+                storeFile = file(keyProperties["storeFile"])
+                storePassword = keyProperties["storePassword"]
+            }
+        }
+    }
+
     defaultConfig {
         applicationId = "com.example.github_webview_app"
         minSdk = flutter.minSdkVersion
@@ -46,8 +65,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            signingConfig = keyPropertiesFile.exists() ? signingConfigs.ciRelease : signingConfigs.debug
+        }
         release {
-            signingConfig = signingConfigs.debug
+            signingConfig = keyPropertiesFile.exists() ? signingConfigs.ciRelease : signingConfigs.debug
             minifyEnabled true
             shrinkResources true
         }
