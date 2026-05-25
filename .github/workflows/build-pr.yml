@@ -34,11 +34,11 @@ jobs:
           echo "flutter.targetSdkVersion=36" >> android/local.properties
           echo "flutter.minSdkVersion=21" >> android/local.properties
       - run: flutter pub get
-      - run: flutter build apk --debug
+      - run: flutter build apk --split-per-abi
       - uses: actions/upload-artifact@v7
         with:
-          name: debug-apk-pr-${{ github.event.pull_request.number }}
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: release-apk-arm64-v8a-pr-${{ github.event.pull_request.number }}
+          path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
           retention-days: 7
 
   post_artifact_link:
@@ -71,7 +71,7 @@ jobs:
 
             const suiteId = run.check_suite_id;
             const prNumber = context.payload.pull_request.number;
-            const artifactName = `debug-apk-pr-${prNumber}`;
+            const artifactName = `release-apk-arm64-v8a-pr-${prNumber}`;
             const artifact = artifacts.find((a) => a.name === artifactName);
 
             const startMarker = '<!-- apk-artifact-link -->';
@@ -80,9 +80,9 @@ jobs:
             let artifactLine;
             if (artifact) {
               const artifactUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/suites/${suiteId}/artifacts/${artifact.id}`;
-              artifactLine = `- Debug APK: [${artifactName}](${artifactUrl})`;
+              artifactLine = `- Release APK (arm64-v8a): [${artifactName}](${artifactUrl})`;
             } else {
-              artifactLine = '- Debug APK: (artifact not found)';
+              artifactLine = '- Release APK (arm64-v8a): (artifact not found)';
             }
 
             const section = [startMarker, artifactLine, endMarker].join('\n');
