@@ -57,7 +57,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
             await Future.delayed(const Duration(milliseconds: 100));
           } else if (message.message.startsWith('OPEN_ALL_URLS:')) {
             final String urlsJson = message.message.substring(14);
-            _handleOpenAllUrls(urlsJson);
+            await _handleOpenAllUrls(urlsJson);
           }
         },
       )
@@ -156,6 +156,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
         await _launchURL(url);
         await Future.delayed(const Duration(milliseconds: 100));
       }
+      await Future.delayed(const Duration(milliseconds: 500));
     } catch (e) {
       print('Error handling open all URLs: $e');
     }
