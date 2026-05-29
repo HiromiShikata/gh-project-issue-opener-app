@@ -15,6 +15,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
       - uses: actions/checkout@v6
       - uses: actions/setup-java@v5
         with:
@@ -62,6 +65,9 @@ jobs:
       pull-requests: write
       actions: read
     steps:
+      - uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
       - name: Post APK download link to PR description
         uses: actions/github-script@v9
         with:
