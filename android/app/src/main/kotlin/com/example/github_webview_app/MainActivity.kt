@@ -1,7 +1,9 @@
 package com.example.github_webview_app
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -36,11 +38,17 @@ class MainActivity : FlutterActivity() {
 
     private fun openAllUrls(urls: List<String>) {
         for (url in urls) {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
-                setPackage(CHROME_PACKAGE)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                    setPackage(CHROME_PACKAGE)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+                }
+                startActivity(intent)
+            } catch (e: ActivityNotFoundException) {
+                Log.w("MainActivity", "Failed to open URL $url: ${e.message}")
+            } catch (e: SecurityException) {
+                Log.w("MainActivity", "Failed to open URL $url: ${e.message}")
             }
-            startActivity(intent)
         }
     }
 
