@@ -5,6 +5,11 @@ import 'package:android_intent_plus/android_intent.dart';
 import 'dart:io' show Platform;
 import 'dart:convert';
 
+List<String> parseOpenAllUrls(String urlsJson) {
+  final List<dynamic> decoded = json.decode(urlsJson) as List<dynamic>;
+  return decoded.cast<String>();
+}
+
 void main() {
   runApp(const MyApp());
 }
@@ -151,12 +156,8 @@ class _WebViewScreenState extends State<WebViewScreen> {
 
   Future<void> _handleOpenAllUrls(String urlsJson) async {
     try {
-      final List<dynamic> urls = json.decode(urlsJson);
-      for (final String url in urls) {
-        await _launchURL(url);
-        await Future.delayed(const Duration(milliseconds: 100));
-      }
-      await Future.delayed(const Duration(milliseconds: 500));
+      final List<String> urls = parseOpenAllUrls(urlsJson);
+      await platform.invokeMethod('openAllUrls', urls);
     } catch (e) {
       print('Error handling open all URLs: $e');
     }
