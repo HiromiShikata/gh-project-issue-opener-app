@@ -131,7 +131,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
         }
       }, true);
 
-      window.openAllLinks = function() {
+      window.collectDisplayedTaskUrls = function() {
         var links = document.getElementsByTagName('a');
         var uniqueUrls = new Set();
         Array.from(links).forEach(function(link) {
@@ -139,7 +139,16 @@ class _WebViewScreenState extends State<WebViewScreen> {
             uniqueUrls.add(link.href);
           }
         });
-        var urlsArray = Array.from(uniqueUrls).reverse();
+        return Array.from(uniqueUrls).reverse();
+      };
+
+      window.openAllLinks = function() {
+        var urlsArray = window.collectDisplayedTaskUrls();
+        NativeApp.postMessage('OPEN_ALL_URLS:' + JSON.stringify(urlsArray));
+      };
+
+      window.openFirstNLinks = function(limit) {
+        var urlsArray = window.collectDisplayedTaskUrls().slice(0, limit);
         NativeApp.postMessage('OPEN_ALL_URLS:' + JSON.stringify(urlsArray));
       };
 
@@ -176,11 +185,28 @@ class _WebViewScreenState extends State<WebViewScreen> {
             Positioned(
               right: 16,
               bottom: 16,
-              child: FloatingActionButton(
-                onPressed: () {
-                  _controller?.runJavaScript('window.openAllLinks()');
-                },
-                child: const Icon(Icons.link),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  FloatingActionButton.extended(
+                    heroTag: 'openFirst10Tasks',
+                    onPressed: () {
+                      _controller?.runJavaScript('window.openFirstNLinks(10)');
+                    },
+                    icon: const Icon(Icons.filter_9_plus),
+                    label: const Text('Open 10'),
+                  ),
+                  const SizedBox(height: 12),
+                  FloatingActionButton.extended(
+                    heroTag: 'openAllTasks',
+                    onPressed: () {
+                      _controller?.runJavaScript('window.openAllLinks()');
+                    },
+                    icon: const Icon(Icons.link),
+                    label: const Text('Open all'),
+                  ),
+                ],
               ),
             ),
           ],

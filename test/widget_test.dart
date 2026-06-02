@@ -14,8 +14,11 @@ void main() {
     expect(find.byType(Scaffold), findsOneWidget);
     expect(find.byType(WebViewWidget), findsNothing);
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    expect(find.byType(FloatingActionButton), findsOneWidget);
+    expect(find.byType(FloatingActionButton), findsNWidgets(2));
     expect(find.byIcon(Icons.link), findsOneWidget);
+    expect(find.byIcon(Icons.filter_9_plus), findsOneWidget);
+    expect(find.text('Open all'), findsOneWidget);
+    expect(find.text('Open 10'), findsOneWidget);
   });
 
   group('parseOpenAllUrls', () {
