@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter/services.dart';
-import 'package:android_intent_plus/android_intent.dart';
-import 'dart:io' show Platform;
 import 'dart:convert';
 
 List<String> parseOpenAllUrls(String urlsJson) {
@@ -56,11 +54,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
       ..addJavaScriptChannel(
         'NativeApp',
         onMessageReceived: (JavaScriptMessage message) async {
-          if (message.message.startsWith('OPEN_URL:')) {
-            final String url = message.message.substring(9);
-            await _launchURL(url);
-            await Future.delayed(const Duration(milliseconds: 100));
-          } else if (message.message.startsWith('OPEN_ALL_URLS:')) {
+          if (message.message.startsWith('OPEN_ALL_URLS:')) {
             final String urlsJson = message.message.substring(14);
             await _handleOpenAllUrls(urlsJson);
           }
@@ -127,7 +121,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
         if (link && link.href && link.href.match(/github\\.com\\/[^\\/]+\\/[^\\/]+\\/(issues|pull)\\/\\d+/)) {
           e.preventDefault();
           e.stopPropagation();
-          NativeApp.postMessage('OPEN_URL:' + link.href);
+          NativeApp.postMessage('OPEN_ALL_URLS:' + JSON.stringify([link.href]));
         }
       }, true);
 
@@ -213,22 +207,5 @@ class _WebViewScreenState extends State<WebViewScreen> {
         ),
       ),
     );
-  }
-
-  Future<void> _launchURL(String url) async {
-    if (Platform.isAndroid) {
-      final AndroidIntent intent = AndroidIntent(
-        action: 'action_view',
-        data: url,
-        package: 'com.android.chrome',
-      );
-      try {
-        await intent.launch();
-      } catch (e) {
-        print('Error launching URL with Android Intent: $e');
-      }
-    } else {
-      print('URL launching is only supported on Android');
-    }
   }
 }

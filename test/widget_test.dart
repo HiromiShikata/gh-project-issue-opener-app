@@ -89,5 +89,25 @@ void main() {
       expect(calls.single.method, 'openAllUrls');
       expect((calls.single.arguments as List<dynamic>).cast<String>(), urls);
     });
+
+    test(
+      'sends exactly one url when a single issue link is clicked',
+      () async {
+        const String clickedUrl = 'https://github.com/owner/repo/issues/7';
+        final List<String> urls = parseOpenAllUrls(
+          json.encode(<String>[clickedUrl]),
+        );
+
+        await channel.invokeMethod('openAllUrls', urls);
+
+        expect(urls, <String>[clickedUrl]);
+        expect(calls.length, 1);
+        expect(calls.single.method, 'openAllUrls');
+        expect(
+          (calls.single.arguments as List<dynamic>).cast<String>(),
+          <String>[clickedUrl],
+        );
+      },
+    );
   });
 }
