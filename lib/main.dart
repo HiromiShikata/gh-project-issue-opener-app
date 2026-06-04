@@ -139,16 +139,16 @@ class _WebViewScreenState extends State<WebViewScreen> {
             uniqueUrls.add(link.href);
           }
         });
-        return Array.from(uniqueUrls).reverse();
+        return Array.from(uniqueUrls);
       };
 
       window.openAllLinks = function() {
-        var urlsArray = window.collectDisplayedTaskUrls();
+        var urlsArray = window.collectDisplayedTaskUrls().reverse();
         NativeApp.postMessage('OPEN_ALL_URLS:' + JSON.stringify(urlsArray));
       };
 
       window.openFirstNLinks = function(limit) {
-        var urlsArray = window.collectDisplayedTaskUrls().slice(0, limit);
+        var urlsArray = window.collectDisplayedTaskUrls().slice(0, limit).reverse();
         NativeApp.postMessage('OPEN_ALL_URLS:' + JSON.stringify(urlsArray));
       };
 
