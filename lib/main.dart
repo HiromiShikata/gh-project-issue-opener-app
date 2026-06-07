@@ -3,9 +3,28 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
 
-List<String> parseOpenAllUrls(String urlsJson) {
-  final List<dynamic> decoded = json.decode(urlsJson) as List<dynamic>;
-  return decoded.cast<String>();
+List<String> parseOpenAllUrls(String payloadJson) {
+  final dynamic decoded = json.decode(payloadJson);
+  if (decoded is List<dynamic>) {
+    return decoded.cast<String>();
+  }
+  if (decoded is Map<String, dynamic>) {
+    final List<String> urls =
+        (decoded['urls'] as List<dynamic>).cast<String>();
+    final int limit = (decoded['limit'] as num?)?.toInt() ?? 0;
+    return selectUrlsForBulkOpen(urls, limit: limit);
+  }
+  return <String>[];
+}
+
+List<String> selectUrlsForBulkOpen(
+  List<String> displayedUrls, {
+  required int limit,
+}) {
+  if (limit <= 0 || limit >= displayedUrls.length) {
+    return List<String>.from(displayedUrls);
+  }
+  return displayedUrls.take(limit).toList();
 }
 
 void main() {
@@ -137,13 +156,13 @@ class _WebViewScreenState extends State<WebViewScreen> {
       };
 
       window.openAllLinks = function() {
-        var urlsArray = window.collectDisplayedTaskUrls().reverse();
-        NativeApp.postMessage('OPEN_ALL_URLS:' + JSON.stringify(urlsArray));
+        var urlsArray = window.collectDisplayedTaskUrls();
+        NativeApp.postMessage('OPEN_ALL_URLS:' + JSON.stringify({urls: urlsArray, limit: 0}));
       };
 
       window.openFirstNLinks = function(limit) {
-        var urlsArray = window.collectDisplayedTaskUrls().slice(0, limit).reverse();
-        NativeApp.postMessage('OPEN_ALL_URLS:' + JSON.stringify(urlsArray));
+        var urlsArray = window.collectDisplayedTaskUrls();
+        NativeApp.postMessage('OPEN_ALL_URLS:' + JSON.stringify({urls: urlsArray, limit: limit}));
       };
 
       document.body.style.fontSize = '100%';

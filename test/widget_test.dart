@@ -52,6 +52,111 @@ void main() {
 
       expect(result, isEmpty);
     });
+
+    test('returns all urls in display order from object payload when limit is zero', () {
+      final List<String> displayedUrls = <String>[
+        'https://github.com/owner/repo/issues/top',
+        'https://github.com/owner/repo/issues/middle',
+        'https://github.com/owner/repo/issues/bottom',
+      ];
+
+      final String payload =
+          json.encode(<String, dynamic>{'urls': displayedUrls, 'limit': 0});
+      final List<String> result = parseOpenAllUrls(payload);
+
+      expect(result, equals(displayedUrls));
+    });
+
+    test('applies limit to take only the first N urls from object payload', () {
+      final List<String> displayedUrls = <String>[
+        'https://github.com/owner/repo/issues/1',
+        'https://github.com/owner/repo/issues/2',
+        'https://github.com/owner/repo/issues/3',
+        'https://github.com/owner/repo/issues/4',
+        'https://github.com/owner/repo/issues/5',
+      ];
+
+      final String payload =
+          json.encode(<String, dynamic>{'urls': displayedUrls, 'limit': 3});
+      final List<String> result = parseOpenAllUrls(payload);
+
+      expect(
+        result,
+        equals(<String>[
+          displayedUrls[0],
+          displayedUrls[1],
+          displayedUrls[2],
+        ]),
+      );
+    });
+
+    test('keeps the topmost displayed url as the first element of the result', () {
+      final List<String> displayedUrls = <String>[
+        'https://github.com/owner/repo/issues/top',
+        'https://github.com/owner/repo/issues/second',
+        'https://github.com/owner/repo/issues/third',
+      ];
+
+      final String payload =
+          json.encode(<String, dynamic>{'urls': displayedUrls, 'limit': 0});
+      final List<String> result = parseOpenAllUrls(payload);
+
+      expect(result.first, equals(displayedUrls.first));
+      expect(result.last, equals(displayedUrls.last));
+    });
+  });
+
+  group('selectUrlsForBulkOpen', () {
+    final List<String> sample = <String>[
+      'https://github.com/owner/repo/issues/1',
+      'https://github.com/owner/repo/issues/2',
+      'https://github.com/owner/repo/issues/3',
+      'https://github.com/owner/repo/issues/4',
+      'https://github.com/owner/repo/issues/5',
+    ];
+
+    test('returns every url in display order when limit is zero', () {
+      final List<String> result = selectUrlsForBulkOpen(sample, limit: 0);
+
+      expect(result, equals(sample));
+    });
+
+    test('returns first N urls in display order when limit is below length', () {
+      final List<String> result = selectUrlsForBulkOpen(sample, limit: 3);
+
+      expect(result, equals(<String>[sample[0], sample[1], sample[2]]));
+    });
+
+    test('returns every url when limit equals length', () {
+      final List<String> result = selectUrlsForBulkOpen(sample, limit: 5);
+
+      expect(result, equals(sample));
+    });
+
+    test('returns every url when limit exceeds length', () {
+      final List<String> result = selectUrlsForBulkOpen(sample, limit: 10);
+
+      expect(result, equals(sample));
+    });
+
+    test('returns empty list for empty input', () {
+      final List<String> result = selectUrlsForBulkOpen(<String>[], limit: 0);
+
+      expect(result, isEmpty);
+    });
+
+    test('returns empty list when input is empty and a positive limit is set', () {
+      final List<String> result = selectUrlsForBulkOpen(<String>[], limit: 5);
+
+      expect(result, isEmpty);
+    });
+
+    test('does not reverse the display order so the topmost url stays first', () {
+      final List<String> result = selectUrlsForBulkOpen(sample, limit: 3);
+
+      expect(result.first, equals(sample.first));
+      expect(result, isNot(equals(sample.reversed.take(3).toList())));
+    });
   });
 
   group('openAllUrls native channel', () {
