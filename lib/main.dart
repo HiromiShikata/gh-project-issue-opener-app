@@ -27,6 +27,26 @@ List<String> selectUrlsForBulkOpen(
   return displayedUrls.take(limit).toList();
 }
 
+const String _fallbackUrl = 'https://github.com/users/HiromiShikata/projects/48/views/16';
+
+bool isAllowedWebViewUrl(String? url) {
+  if (url == null || url.isEmpty) {
+    return false;
+  }
+  final Uri? uri = Uri.tryParse(url);
+  if (uri == null) {
+    return false;
+  }
+  return uri.scheme.toLowerCase() == 'https' &&
+      uri.host.toLowerCase() == 'github.com' &&
+      uri.userInfo.isEmpty &&
+      (!uri.hasPort || uri.port == 443);
+}
+
+bool shouldHandleNativeAppMessage(String? currentUrl) {
+  return isAllowedWebViewUrl(currentUrl);
+}
+
 void main() {
   runApp(const MyApp());
 }
@@ -55,6 +75,7 @@ class WebViewScreen extends StatefulWidget {
 
 class _WebViewScreenState extends State<WebViewScreen> {
   WebViewController? _controller;
+  String? _currentUrl;
   static const platform = MethodChannel('com.example.github_webview_app/tasker');
 
   @override
@@ -64,7 +85,9 @@ class _WebViewScreenState extends State<WebViewScreen> {
   }
 
   Future<void> _initializeWebView() async {
-    String initialUrl = await _getInitialUrl();
+    final String requestedUrl = await _getInitialUrl();
+    final String initialUrl =
+        isAllowedWebViewUrl(requestedUrl) ? requestedUrl : _fallbackUrl;
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..enableZoom(true)
@@ -73,6 +96,9 @@ class _WebViewScreenState extends State<WebViewScreen> {
       ..addJavaScriptChannel(
         'NativeApp',
         onMessageReceived: (JavaScriptMessage message) async {
+          if (!shouldHandleNativeAppMessage(_currentUrl)) {
+            return;
+          }
           if (message.message.startsWith('OPEN_ALL_URLS:')) {
             final String urlsJson = message.message.substring(14);
             await _handleOpenAllUrls(urlsJson);
@@ -82,9 +108,15 @@ class _WebViewScreenState extends State<WebViewScreen> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onNavigationRequest: (NavigationRequest request) {
-            return NavigationDecision.navigate;
+            return isAllowedWebViewUrl(request.url)
+                ? NavigationDecision.navigate
+                : NavigationDecision.prevent;
+          },
+          onUrlChange: (UrlChange change) {
+            _currentUrl = change.url;
           },
           onPageStarted: (String url) {
+            _currentUrl = url;
             _controller?.runJavaScript('''
               var viewport = document.querySelector('meta[name="viewport"]');
               if (viewport) {
@@ -110,10 +142,10 @@ class _WebViewScreenState extends State<WebViewScreen> {
       if (result.isNotEmpty) {
         return result;
       }
-      return 'https://github.com/users/HiromiShikata/projects/48/views/16';
+      return _fallbackUrl;
     } on PlatformException catch (e) {
       print("Failed to get initial URL: '${e.message}'.");
-      return 'https://github.com/users/HiromiShikata/projects/48/views/16';
+      return _fallbackUrl;
     }
   }
 
